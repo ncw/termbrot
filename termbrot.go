@@ -10,6 +10,7 @@ import (
 	"math"
 	"math/cmplx"
 	"os"
+	"regexp"
 	"sync"
 	"time"
 
@@ -42,6 +43,8 @@ var (
 	depth        int
 	textFace     font.Face
 	plotDuration time.Duration
+	imgWidth     int
+	imgHeight    int
 	decompose    = false
 )
 
@@ -204,6 +207,7 @@ func getSetSize(width, height int) (dx, dy float64) {
 func writeMandlebrotSet() {
 	width, height, _, _, _, cellHeight := getImageDimensions()
 	dx, dy := getSetSize(width, height)
+	imgWidth, imgHeight = width, height
 
 	rowSize := 3 * width
 	data := make([]byte, cellHeight*rowSize)
@@ -251,6 +255,14 @@ func drawText(img *image.RGBA, x, y int, text string, col color.Color) {
 	d.DrawString(text)
 }
 
+var truncateDuration = regexp.MustCompile(`(\.\d{2})\d*`) // Match . and at least 2 digits
+
+// truncatedDuration formats a time.Duration like %v but truncates decimals to 2 places.
+func truncatedDuration(d time.Duration) string {
+	str := d.String()                                   // Default format
+	return truncateDuration.ReplaceAllString(str, `$1`) // Replace with only the first 2 digits
+}
+
 // helpOverlay returns an image with the help text to overlay on the main image
 func helpOverlay() *image.RGBA {
 	width, height := 600, 300
@@ -279,7 +291,7 @@ func helpOverlay() *image.RGBA {
 		drawText(textImg, sp, infoY+h*0, fmt.Sprintf("• Center %g", center), b80)
 		drawText(textImg, sp, infoY+h*1, fmt.Sprintf("• Radius %g", radius), b80)
 		drawText(textImg, sp, infoY+h*2, fmt.Sprintf("• Depth %d", depth), b80)
-		drawText(textImg, sp, infoY+h*3, fmt.Sprintf("• Time %v", plotDuration), b80)
+		drawText(textImg, sp, infoY+h*3, fmt.Sprintf("• Time %s (%d x %d)", truncatedDuration(plotDuration), imgWidth, imgHeight), b80)
 	}
 	return textImg
 }
