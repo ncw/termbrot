@@ -93,9 +93,9 @@ func smoothColor(i int, z complex128, maxDepth int) color.RGBA {
 	b := uint8(float64(c1.B)*(1-frac) + float64(c2.B)*frac)
 
 	if decompose && imag(z) < 0 {
-		// r ^= 0x10
-		// g ^= 0x10
-		b ^= 0x10
+		r = uint8(0.8 * float64(r))
+		g = uint8(0.8 * float64(g))
+		b = uint8(0.8 * float64(b))
 	}
 
 	return color.RGBA{r, g, b, 255}
